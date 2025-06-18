@@ -1,12 +1,20 @@
 import express from 'express';
+import cors from 'cors';
 import { WebSocketServer } from 'ws';
 import fetch from 'node-fetch';
 import dotenv from 'dotenv';
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+// Allow CORS for your Vercel frontend
+app.use(cors({
+  origin: 'https://vibein-jade.vercel.app',
+  methods: ['GET', 'POST'],
+  credentials: false
+}));
 app.use(express.json());
+
+const PORT = process.env.PORT || 3000;
 
 // In-memory session and queue storage
 const sessions = {};
