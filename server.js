@@ -118,9 +118,26 @@ wss.on('connection', (ws, req) => {
         if (sessions[data.sessionId]) {
           ws.send(JSON.stringify({ type: 'queue_updated', queue: sessions[data.sessionId].queue }));
         }
+      } else if (data.type === 'remove_current_track' && data.sessionId) {
+        // Remove the first track from the queue (current playing track)
+        if (sessions[data.sessionId] && sessions[data.sessionId].queue.length > 0) {
+          sessions[data.sessionId].queue.shift(); // Remove first element
+          
+          // Notify all clients subscribed to this session
+          if (sessionClients[data.sessionId]) {
+            for (const client of sessionClients[data.sessionId]) {
+              if (client.readyState === client.OPEN) {
+                client.send(JSON.stringify({ 
+                  type: 'queue_updated', 
+                  queue: sessions[data.sessionId].queue 
+                }));
+              }
+            }
+          }
+        }
       }
     } catch (e) {
-      // Ignore malformed messages
+      console.error('Error processing WebSocket message:', e);
     }
   });
   ws.on('close', () => {
